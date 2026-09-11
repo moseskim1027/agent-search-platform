@@ -7,7 +7,14 @@ import tomllib
 from collections.abc import Iterable
 from pathlib import Path
 
-from agent_search.corpus.schemas import Domain, RelevanceJudgment, SearchQuery, SourceFile
+from agent_search.corpus.schemas import (
+    Domain,
+    GeoPoint,
+    RelevanceJudgment,
+    SearchMetadata,
+    SearchQuery,
+    SourceFile,
+)
 
 DEFAULT_RAW_DIRECTORY = Path("data/raw")
 DEFAULT_OUTPUT_DIRECTORY = Path("data/derived")
@@ -32,9 +39,14 @@ def parse_raw_file(path: Path, raw_directory: Path) -> SourceFile:
     _, front_matter, body = raw_text.split(FRONT_MATTER_DELIMITER, maxsplit=2)
     parsed_metadata = tomllib.loads(front_matter)
     relative_path = path.relative_to(raw_directory).as_posix()
-    metadata = {
-        key: value for key, value in parsed_metadata.items() if key not in CORE_METADATA_FIELDS
-    }
+    tags = parsed_metadata.get("tags", parsed_metadata.get("topics"))
+    coordinates = parsed_metadata.get("coordinates")
+    metadata = SearchMetadata(
+        region=parsed_metadata["region"],
+        tags=tags,
+        category=parsed_metadata.get("category"),
+        geo=GeoPoint(coordinates=coordinates) if coordinates else None,
+    )
 
     return SourceFile(
         **{key: value for key, value in parsed_metadata.items() if key in CORE_METADATA_FIELDS},

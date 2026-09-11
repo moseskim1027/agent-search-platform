@@ -3,7 +3,15 @@ from datetime import date
 import pytest
 from pydantic import ValidationError
 
-from agent_search.corpus.schemas import Domain, RelevanceJudgment, SearchQuery, SourceFile
+from agent_search.corpus.schemas import (
+    ChunkRecord,
+    Domain,
+    GeoPoint,
+    RelevanceJudgment,
+    SearchMetadata,
+    SearchQuery,
+    SourceFile,
+)
 
 
 def test_source_file_preserves_raw_content_and_provenance() -> None:
@@ -18,11 +26,33 @@ def test_source_file_preserves_raw_content_and_provenance() -> None:
         body="A synthetic update.",
         content_sha256="a" * 64,
         published_at=date(2026, 1, 1),
-        metadata={"region": "seoul", "topics": ["transport"]},
+        metadata=SearchMetadata(region="seoul", tags=["transport"]),
     )
 
     assert source_file.schema_version == "1.0"
-    assert source_file.metadata["region"] == "seoul"
+    assert source_file.metadata.region == "seoul"
+
+
+def test_chunk_record_copies_filterable_source_metadata() -> None:
+    chunk = ChunkRecord(
+        chunk_id="location-central-station-chunk-000",
+        file_id="location-central-station",
+        domain=Domain.LOCATION,
+        language="en",
+        source_title="Central Station",
+        source_url="https://synthetic.example/locations/central-station",
+        text="Step-free transfer between the Blue and Green lines.",
+        sequence=0,
+        character_start=0,
+        character_end=52,
+        metadata=SearchMetadata(
+            region="seoul",
+            tags=["blue-line", "accessible"],
+            geo=GeoPoint(coordinates=(126.9779, 37.5652)),
+        ),
+    )
+
+    assert chunk.metadata.geo.type == "Point"
 
 
 def test_query_allows_an_optional_domain_filter() -> None:

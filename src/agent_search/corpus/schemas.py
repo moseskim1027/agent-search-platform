@@ -1,7 +1,8 @@
-"""Versioned data contracts for source-file ingestion and retrieval evaluation."""
+"""Versioned contracts for source-file ingestion, future chunks, and evaluation."""
 
 from datetime import date
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
@@ -13,6 +14,36 @@ class Domain(StrEnum):
 
     LOCATION = "location"
     NEWS = "news"
+
+
+class GeoPoint(BaseModel):
+    """GeoJSON-compatible longitude/latitude point for Atlas geospatial filtering."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["Point"] = "Point"
+    coordinates: tuple[float, float]
+
+    @field_validator("coordinates")
+    @classmethod
+    def coordinates_are_valid(cls, value: tuple[float, float]) -> tuple[float, float]:
+        """Require valid GeoJSON longitude then latitude coordinates."""
+
+        longitude, latitude = value
+        if not -180 <= longitude <= 180 or not -90 <= latitude <= 90:
+            raise ValueError("coordinates must contain valid longitude and latitude")
+        return value
+
+
+class SearchMetadata(BaseModel):
+    """Filterable metadata copied from a source file to each future chunk."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    region: str = Field(min_length=1)
+    tags: list[str] = Field(min_length=1)
+    category: str | None = None
+    geo: GeoPoint | None = None
 
 
 class SourceFile(BaseModel):
@@ -31,7 +62,28 @@ class SourceFile(BaseModel):
     body: str = Field(min_length=1)
     content_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
     published_at: date | None = None
-    metadata: dict[str, str | list[str]] = Field(default_factory=dict)
+    metadata: SearchMetadata
+
+
+class ChunkRecord(BaseModel):
+    """Atlas-ready partition derived from a source file; not generated yet."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = SCHEMA_VERSION
+    chunk_id: str = Field(pattern=r"^(location|news)-[a-z0-9-]+-chunk-[0-9]{3}$")
+    file_id: str = Field(pattern=r"^(location|news)-[a-z0-9-]+$")
+    domain: Domain
+    language: str = Field(pattern=r"^[a-z]{2}$")
+    source_title: str = Field(min_length=1)
+    source_url: HttpUrl
+    text: str = Field(min_length=1)
+    sequence: int = Field(ge=0)
+    character_start: int = Field(ge=0)
+    character_end: int = Field(ge=1)
+    published_at: date | None = None
+    metadata: SearchMetadata
+    embedding: list[float] | None = None
 
 
 class SearchQuery(BaseModel):

@@ -7,11 +7,12 @@ are deliberately fictional, but they resemble the two target source domains:
 - `locations/`: place profiles with coordinates, category, operating details,
   and descriptive body text.
 
-Each file uses TOML front matter. The ingestion step will create a file-level
-record from this source metadata and content, including a checksum and source
-path. Later partitioning will create chunks that retain the file ID and selected
-metadata; it must not overwrite or discard the raw file.
+Each file uses TOML front matter. The ingestion step creates a file-level record
+from this source metadata and content, including a checksum and source path.
+Later partitioning creates chunks that retain the file ID and filterable
+metadata; it must not overwrite or discard the raw file. Location files use
+`coordinates = [longitude, latitude]`, which becomes a GeoJSON `Point` in the
+derived record.
 
 The `synthetic.example` URLs and every claim in these files are fictional. No
 real articles, places, users, or proprietary source content is included.
-
