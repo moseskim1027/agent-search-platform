@@ -1,0 +1,11 @@
+{"document_id": "news-han-river-transit", "query_id": "q-late-trains", "relevance": 3, "schema_version": "1.0"}
+{"document_id": "finance-han-river-capex", "query_id": "q-late-trains", "relevance": 1, "schema_version": "1.0"}
+{"document_id": "finance-orbit-q4-results", "query_id": "q-orbit-recycling", "relevance": 3, "schema_version": "1.0"}
+{"document_id": "news-orbit-battery-ko", "query_id": "q-orbit-recycling", "relevance": 2, "schema_version": "1.0"}
+{"document_id": "finance-orbit-risk-ko", "query_id": "q-orbit-recycling", "relevance": 1, "schema_version": "1.0"}
+{"document_id": "finance-nova-guidance", "query_id": "q-shipping-risks", "relevance": 3, "schema_version": "1.0"}
+{"document_id": "news-busan-port-weather", "query_id": "q-shipping-risks", "relevance": 2, "schema_version": "1.0"}
+{"document_id": "finance-han-river-capex", "query_id": "q-metro-capital", "relevance": 3, "schema_version": "1.0"}
+{"document_id": "news-seoul-mobility-ko", "query_id": "q-seoul-shuttle", "relevance": 3, "schema_version": "1.0"}
+{"document_id": "finance-orbit-risk-ko", "query_id": "q-orbit-risk", "relevance": 3, "schema_version": "1.0"}
+{"document_id": "finance-orbit-q4-results", "query_id": "q-orbit-risk", "relevance": 1, "schema_version": "1.0"}
