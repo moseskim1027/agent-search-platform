@@ -12,4 +12,3 @@ def test_health_reports_service_metadata() -> None:
         "environment": "development",
         "version": "0.1.0",
     }
-
