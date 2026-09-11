@@ -1,4 +1,4 @@
-"""Versioned data contracts for the synthetic retrieval corpus."""
+"""Versioned data contracts for source-file ingestion and retrieval evaluation."""
 
 from datetime import date
 from enum import StrEnum
@@ -9,26 +9,29 @@ SCHEMA_VERSION = "1.0"
 
 
 class Domain(StrEnum):
-    """Domains represented by the initial synthetic corpus."""
+    """Source domains represented by the initial corpus."""
 
-    FINANCE = "finance"
+    LOCATION = "location"
     NEWS = "news"
 
 
-class CorpusDocument(BaseModel):
-    """A document that can be indexed by lexical and vector retrieval systems."""
+class SourceFile(BaseModel):
+    """An ingested raw file before it is partitioned into search chunks."""
 
     model_config = ConfigDict(extra="forbid")
 
     schema_version: str = SCHEMA_VERSION
-    document_id: str = Field(pattern=r"^(finance|news)-[a-z0-9-]+$")
+    file_id: str = Field(pattern=r"^(location|news)-[a-z0-9-]+$")
     domain: Domain
     language: str = Field(pattern=r"^[a-z]{2}$")
     title: str = Field(min_length=1)
-    body: str = Field(min_length=1)
-    published_at: date
     source_url: HttpUrl
-    metadata: dict[str, str] = Field(default_factory=dict)
+    source_path: str = Field(pattern=r"^(locations|news)/[a-z0-9-]+\.md$")
+    raw_text: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+    content_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    published_at: date | None = None
+    metadata: dict[str, str | list[str]] = Field(default_factory=dict)
 
 
 class SearchQuery(BaseModel):
@@ -44,13 +47,13 @@ class SearchQuery(BaseModel):
 
 
 class RelevanceJudgment(BaseModel):
-    """A graded query-document relevance label for deterministic offline metrics."""
+    """A graded query-file relevance label for deterministic offline metrics."""
 
     model_config = ConfigDict(extra="forbid")
 
     schema_version: str = SCHEMA_VERSION
     query_id: str = Field(pattern=r"^q-[a-z0-9-]+$")
-    document_id: str = Field(pattern=r"^(finance|news)-[a-z0-9-]+$")
+    file_id: str = Field(pattern=r"^(location|news)-[a-z0-9-]+$")
     relevance: int = Field(ge=0, le=3)
 
     @field_validator("relevance")
@@ -61,4 +64,3 @@ class RelevanceJudgment(BaseModel):
         if value == 0:
             raise ValueError("relevance judgments must be greater than zero")
         return value
-

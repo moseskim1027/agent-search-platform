@@ -1,6 +1,5 @@
 """Synthetic corpus models and fixture-generation utilities."""
 
-from agent_search.corpus.schemas import CorpusDocument, Domain, RelevanceJudgment, SearchQuery
+from agent_search.corpus.schemas import Domain, RelevanceJudgment, SearchQuery, SourceFile
 
-__all__ = ["CorpusDocument", "Domain", "RelevanceJudgment", "SearchQuery"]
-
+__all__ = ["Domain", "RelevanceJudgment", "SearchQuery", "SourceFile"]

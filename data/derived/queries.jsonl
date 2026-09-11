@@ -1,0 +1,6 @@
+{"domain": null, "language": "en", "query": "late evening Blue Line trains", "query_id": "q-late-blue-line", "schema_version": "1.0"}
+{"domain": null, "language": "en", "query": "Busan port weather delay", "query_id": "q-busan-weather", "schema_version": "1.0"}
+{"domain": null, "language": "en", "query": "accessible Blue Line transfer", "query_id": "q-accessible-transfer", "schema_version": "1.0"}
+{"domain": null, "language": "ko", "query": "서울 심야 셔틀", "query_id": "q-night-shuttle", "schema_version": "1.0"}
+{"domain": null, "language": "ko", "query": "오빗 배터리 재활용", "query_id": "q-battery-recycling", "schema_version": "1.0"}
+{"domain": "location", "language": "en", "query": "cargo terminal gate times", "query_id": "q-cargo-gate-times", "schema_version": "1.0"}

@@ -3,22 +3,26 @@ from datetime import date
 import pytest
 from pydantic import ValidationError
 
-from agent_search.corpus.schemas import CorpusDocument, Domain, RelevanceJudgment, SearchQuery
+from agent_search.corpus.schemas import Domain, RelevanceJudgment, SearchQuery, SourceFile
 
 
-def test_document_accepts_a_versioned_synthetic_source() -> None:
-    document = CorpusDocument(
-        document_id="news-transit-update",
+def test_source_file_preserves_raw_content_and_provenance() -> None:
+    source_file = SourceFile(
+        file_id="news-transit-update",
         domain=Domain.NEWS,
         language="en",
         title="Transit update",
-        body="A synthetic update about a rail service.",
+        source_url="https://synthetic.example/news/transit-update",
+        source_path="news/transit-update.md",
+        raw_text='+++\ntitle = "Transit update"\n+++\n\nA synthetic update.',
+        body="A synthetic update.",
+        content_sha256="a" * 64,
         published_at=date(2026, 1, 1),
-        source_url="https://synthetic.example/news-transit-update",
+        metadata={"region": "seoul", "topics": ["transport"]},
     )
 
-    assert document.schema_version == "1.0"
-    assert str(document.source_url) == "https://synthetic.example/news-transit-update"
+    assert source_file.schema_version == "1.0"
+    assert source_file.metadata["region"] == "seoul"
 
 
 def test_query_allows_an_optional_domain_filter() -> None:
@@ -29,4 +33,4 @@ def test_query_allows_an_optional_domain_filter() -> None:
 
 def test_judgment_rejects_zero_relevance() -> None:
     with pytest.raises(ValidationError, match="greater than zero"):
-        RelevanceJudgment(query_id="q-transit", document_id="news-transit-update", relevance=0)
+        RelevanceJudgment(query_id="q-transit", file_id="news-transit-update", relevance=0)
