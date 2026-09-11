@@ -1,0 +1,10 @@
+services:
+  api:
+    build:
+      context: .
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+

@@ -40,6 +40,17 @@ Then open `http://127.0.0.1:8000/docs` or run:
 curl http://127.0.0.1:8000/health
 ```
 
+## Run with Docker
+
+Build and start the API:
+
+```bash
+docker compose up --build
+```
+
+The service is available at `http://127.0.0.1:8000`; its container health check
+calls `/health`. Stop the service with `docker compose down`.
+
 ## Planned delivery sequence
 
 1. Foundation: application structure, configuration, local developer workflow.
