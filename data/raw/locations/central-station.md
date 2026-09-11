@@ -17,3 +17,11 @@ a staffed information desk near Exit 4.
 On late-service nights, the transfer concourse remains open until the final Blue
 Line departure. The location profile is designed to test search queries that
 mix route names, accessibility needs, and operating details.
+
+The fictional information desk can provide directions to lifts, accessible
+restrooms, and the Green Line platform. Signage identifies the shortest route
+for passengers transferring with luggage or a bicycle. During the late-night
+Blue Line pilot, staff may hold the concourse open briefly when a delayed train
+still has a scheduled Green Line connection. These details intentionally belong
+to a place profile rather than the service announcement, allowing a later
+retriever to select the correct source for an accessibility or transfer query.

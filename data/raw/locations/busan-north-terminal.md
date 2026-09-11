@@ -17,3 +17,11 @@ gate-time guidance, and an operations contact desk.
 During severe weather, the terminal may restrict crane activity and publish
 revised arrival windows. The file provides a location-oriented counterpart to
 the synthetic storm-delay news article.
+
+The fictional profile separates place-specific guidance from the broader storm
+report. Drivers can use the gate-time notice to confirm an appointment window,
+while operations staff can publish changes to the contact desk and weather-alert
+channel. The profile also records a port-terminal category, Busan region, and
+GeoJSON-compatible coordinates. Those fields are intended for later filters such
+as "cargo terminals near Busan" without making the news article carry location
+metadata it does not own.
