@@ -21,4 +21,3 @@ def get_settings() -> Settings:
     """Return a cached settings instance for the running process."""
 
     return Settings()
-

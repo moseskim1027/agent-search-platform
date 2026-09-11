@@ -1,0 +1,11 @@
+{"file_id": "news-han-river-night-service", "query_id": "q-late-blue-line", "relevance": 3, "schema_version": "1.0"}
+{"file_id": "location-central-station", "query_id": "q-late-blue-line", "relevance": 2, "schema_version": "1.0"}
+{"file_id": "news-busan-port-weather-delay", "query_id": "q-busan-weather", "relevance": 3, "schema_version": "1.0"}
+{"file_id": "location-busan-north-terminal", "query_id": "q-busan-weather", "relevance": 2, "schema_version": "1.0"}
+{"file_id": "location-central-station", "query_id": "q-accessible-transfer", "relevance": 3, "schema_version": "1.0"}
+{"file_id": "news-han-river-night-service", "query_id": "q-accessible-transfer", "relevance": 1, "schema_version": "1.0"}
+{"file_id": "news-seoul-mobility-shuttle-ko", "query_id": "q-night-shuttle", "relevance": 3, "schema_version": "1.0"}
+{"file_id": "location-riverside-park", "query_id": "q-night-shuttle", "relevance": 2, "schema_version": "1.0"}
+{"file_id": "news-orbit-battery-center-ko", "query_id": "q-battery-recycling", "relevance": 3, "schema_version": "1.0"}
+{"file_id": "location-busan-north-terminal", "query_id": "q-cargo-gate-times", "relevance": 3, "schema_version": "1.0"}
+{"file_id": "news-busan-port-weather-delay", "query_id": "q-cargo-gate-times", "relevance": 1, "schema_version": "1.0"}

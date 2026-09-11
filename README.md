@@ -12,7 +12,7 @@ separate, reviewable pull requests.
 
 ## Goals
 
-- Search across news and financial-document domains.
+- Search across news articles and location profiles.
 - Make grounding explicit through source and passage metadata.
 - Measure relevance with nDCG, MRR, and recall alongside latency.
 - Keep the system locally runnable and production-minded.
@@ -59,17 +59,19 @@ pull request and for changes merged to `main`.
 ## Planned delivery sequence
 
 1. Foundation: application structure, configuration, local developer workflow.
-2. Synthetic corpus: deterministic generators, schemas, and relevance labels.
-3. Retrieval: BM25, vector search, and reciprocal-rank fusion.
-4. Search contract: grounded results, filtering, and failure handling.
-5. Evaluation and operations: benchmark suite, metrics, caching, and dashboards.
+2. Raw corpus ingestion: file-level records, provenance, and relevance labels.
+3. Partitioning: metadata-preserving chunks derived from source files.
+4. Retrieval: BM25, vector search, and reciprocal-rank fusion.
+5. Search contract: grounded results, filtering, and failure handling.
+6. Evaluation and operations: benchmark suite, metrics, caching, and dashboards.
 
 ## Project layout
 
 ```text
-src/agent_search/      Application package
+src/agent_search/      Application and ingestion packages
 tests/                 Automated tests
-data/synthetic/        Generated synthetic fixtures (not committed yet)
+data/raw/              Immutable synthetic source files
+data/derived/          Generated file records and evaluation fixtures
 docs/                  Architecture and decision records
 ```
 

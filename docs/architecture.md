@@ -5,19 +5,20 @@ clear package boundaries. This keeps the project readable while allowing the
 retrieval and ranking layers to be evaluated independently.
 
 ```text
-Client or AI agent
+Raw news and location files
         |
         v
-Grounded Search API
+File ingestion (provenance + metadata)
         |
-        +--> lexical retrieval
-        +--> vector retrieval
-        +--> fusion / reranking
+        v
+Metadata-preserving partitioning
+        |
+        v
+Grounded Search API --> lexical retrieval + vector retrieval --> fusion / reranking
         |
         v
 Evidence-rich result contract
 ```
 
-Future pull requests will add the data and indexing layers behind the retrieval
-components, followed by a benchmark harness and operational instrumentation.
-
+Future pull requests will add partitioning and indexing layers behind retrieval,
+followed by a benchmark harness and operational instrumentation.
