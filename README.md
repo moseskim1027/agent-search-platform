@@ -51,6 +51,11 @@ docker compose up --build
 The service is available at `http://127.0.0.1:8000`; its container health check
 calls `/health`. Stop the service with `docker compose down`.
 
+## Continuous integration
+
+GitHub Actions runs Ruff, the test suite, and a Docker image build for every
+pull request and for changes merged to `main`.
+
 ## Planned delivery sequence
 
 1. Foundation: application structure, configuration, local developer workflow.
