@@ -114,6 +114,24 @@ text and titles while mapping the planned filter fields. There is deliberately
 no vector index yet because its required embedding dimension has not been
 selected.
 
+`docker compose up --build` also starts a MongoDB 7 container for local
+integration work. The API receives its service-local connection string from
+Compose, and MongoDB data is retained in the named `mongo_data` volume. Stop
+the stack with `docker compose down`; use `docker compose down -v` only when
+you deliberately want to remove local database data.
+
+To run the live persistence check against that local service, start MongoDB and
+provide its URI explicitly:
+
+```bash
+docker compose up -d --wait mongo
+MONGODB_URI=mongodb://127.0.0.1:27017 python -m pytest -m integration
+docker compose down
+```
+
+The integration test writes only to `agent_search_integration_test` and removes
+that database after the assertion run.
+
 ## License
 
 MIT
