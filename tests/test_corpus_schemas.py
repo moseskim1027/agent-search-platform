@@ -42,6 +42,7 @@ def test_chunk_record_copies_filterable_source_metadata() -> None:
         source_title="Central Station",
         source_url="https://synthetic.example/locations/central-station",
         text="Step-free transfer between the Blue and Green lines.",
+        content_sha256="b" * 64,
         sequence=0,
         character_start=0,
         character_end=52,
