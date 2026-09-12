@@ -156,6 +156,20 @@ both can be tested and measured independently. The Atlas adapter expresses the
 same text and metadata filtering shape, while this milestone remains runnable
 without Atlas credentials.
 
+To run the Atlas Search adapter smoke test locally, start the separate
+Search-enabled MongoDB profile. It provisions the checked-in search index,
+loads generated chunks, and executes the adapter's real `$search` pipeline:
+
+```bash
+docker compose --profile search up -d --wait mongo-search
+ATLAS_LOCAL_URI='mongodb://127.0.0.1:27018/?directConnection=true' \
+  python -m pytest -m atlas_local
+docker compose --profile search down
+```
+
+The `mongo-search` container uses `mongodb/mongodb-atlas-local` for local
+development and CI only; it is not a production Atlas deployment.
+
 ## License
 
 MIT
