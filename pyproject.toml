@@ -29,6 +29,9 @@ packages = ["src/agent_search"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+markers = [
+  "integration: requires an explicitly configured MongoDB instance",
+]
 
 [tool.ruff]
 line-length = 100
