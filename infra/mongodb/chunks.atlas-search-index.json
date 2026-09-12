@@ -1,0 +1,24 @@
+{
+  "collection": "chunks",
+  "name": "chunk_text_and_filters",
+  "definition": {
+    "mappings": {
+      "dynamic": false,
+      "fields": {
+        "text": {"type": "string", "analyzer": "lucene.standard"},
+        "source_title": {"type": "string", "analyzer": "lucene.standard"},
+        "domain": {"type": "token"},
+        "language": {"type": "token"},
+        "published_at": {"type": "date"},
+        "metadata": {
+          "type": "document",
+          "fields": {
+            "region": {"type": "token"},
+            "tags": {"type": "token"},
+            "category": {"type": "token"}
+          }
+        }
+      }
+    }
+  }
+}
