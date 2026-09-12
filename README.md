@@ -75,6 +75,27 @@ data/derived/          Generated file records and evaluation fixtures
 docs/                  Architecture and decision records
 ```
 
+## Chunking contract
+
+`python -m agent_search.corpus.generator` derives `data/derived/chunks.jsonl`
+alongside the file records, queries, and file-level relevance labels. Raw
+Markdown is never modified. Each source body is partitioned deterministically
+into roughly 1,100-character windows with approximately 200 characters of
+overlap, preferring paragraph boundaries and then sentence boundaries. An
+exceptionally long sentence is hard-split only when no natural boundary fits.
+
+Chunk offsets are **body-relative**: offset zero is the first character of the
+parsed, edge-whitespace-stripped `SourceFile.body`, after TOML front matter is
+removed. Therefore every chunk obeys this provenance invariant:
+
+```python
+chunk.text == source_file.body[chunk.character_start : chunk.character_end]
+```
+
+Every chunk retains its source file ID, title, URL, publication date, domain,
+language, and complete filterable metadata so later retrieval can filter and
+cite chunks without a join.
+
 ## License
 
 MIT

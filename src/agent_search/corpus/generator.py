@@ -7,7 +7,9 @@ import tomllib
 from collections.abc import Iterable
 from pathlib import Path
 
+from agent_search.corpus.partitioning import partition_source_files
 from agent_search.corpus.schemas import (
+    ChunkRecord,
     Domain,
     GeoPoint,
     RelevanceJudgment,
@@ -128,7 +130,7 @@ def build_judgments() -> list[RelevanceJudgment]:
 
 
 def write_jsonl(
-    records: Iterable[SourceFile | SearchQuery | RelevanceJudgment], path: Path
+    records: Iterable[SourceFile | ChunkRecord | SearchQuery | RelevanceJudgment], path: Path
 ) -> None:
     """Write records as stable, newline-delimited JSON for source-control-friendly diffs."""
 
@@ -146,7 +148,9 @@ def generate_fixtures(
     """Generate file records and evaluation fixtures from immutable raw inputs."""
 
     output_directory.mkdir(parents=True, exist_ok=True)
-    write_jsonl(build_source_files(raw_directory), output_directory / "files.jsonl")
+    source_files = build_source_files(raw_directory)
+    write_jsonl(source_files, output_directory / "files.jsonl")
+    write_jsonl(partition_source_files(source_files), output_directory / "chunks.jsonl")
     write_jsonl(build_queries(), output_directory / "queries.jsonl")
     write_jsonl(build_judgments(), output_directory / "qrels.jsonl")
 
