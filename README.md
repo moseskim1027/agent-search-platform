@@ -132,6 +132,30 @@ docker compose down
 The integration test writes only to `agent_search_integration_test` and removes
 that database after the assertion run.
 
+## Lexical search API
+
+`POST /v1/search` provides a deterministic, dependency-free BM25 baseline over
+the generated chunks. It accepts a versioned request with `query`, optional
+filters, and a result limit. Filters cover domain, language, region, tag,
+category, publication-date range, and a geographic radius for location records.
+
+Every result is grounded evidence rather than an untraceable answer: it includes
+the chunk and file IDs, rank and score, exact chunk text, body-relative character
+offsets, source title and URL, publication date, and copied source metadata.
+Invalid request shapes, empty queries, out-of-range coordinates, and reversed
+date ranges return FastAPI validation errors.
+
+```bash
+curl -X POST http://127.0.0.1:8000/v1/search \
+  -H 'content-type: application/json' \
+  -d '{"query":"Busan cargo terminal weather","filters":{"region":"busan"}}'
+```
+
+The local retriever is intentionally separate from the Atlas Search adapter so
+both can be tested and measured independently. The Atlas adapter expresses the
+same text and metadata filtering shape, while this milestone remains runnable
+without Atlas credentials.
+
 ## License
 
 MIT
