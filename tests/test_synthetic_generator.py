@@ -16,10 +16,13 @@ def test_generator_writes_file_level_records_and_evaluation_fixtures(tmp_path: P
     generate_fixtures(output_directory=tmp_path)
 
     files = [json.loads(line) for line in (tmp_path / "files.jsonl").read_text().splitlines()]
+    chunks = [json.loads(line) for line in (tmp_path / "chunks.jsonl").read_text().splitlines()]
     queries = [json.loads(line) for line in (tmp_path / "queries.jsonl").read_text().splitlines()]
     judgments = [json.loads(line) for line in (tmp_path / "qrels.jsonl").read_text().splitlines()]
 
     assert len(files) == 7
+    assert chunks
+    assert all(chunk["text"] for chunk in chunks)
     assert len(queries) == 6
     assert len(judgments) == 11
     assert all(record["schema_version"] == "1.0" for record in [*files, *queries, *judgments])
