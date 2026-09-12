@@ -96,6 +96,24 @@ Every chunk retains its source file ID, title, URL, publication date, domain,
 language, and complete filterable metadata so later retrieval can filter and
 cite chunks without a join.
 
+## MongoDB Atlas persistence
+
+MongoDB is optional during local generation and tests. Set `MONGODB_URI`,
+`MONGODB_DATABASE`, `MONGODB_SOURCE_FILES_COLLECTION`, and
+`MONGODB_CHUNKS_COLLECTION` only in the ignored `.env` file; `.env.example`
+lists the required keys without a real credential. `MongoCorpusRepository`
+accepts a database object and provides idempotent `upsert_source_files()` and
+`upsert_chunks()` operations, keyed by `file_id` and `chunk_id`. Stored records
+include `content_sha256` and an `ingestion_version` to make data provenance
+explicit.
+
+Reviewable MongoDB index definitions are in `infra/mongodb/`. The standard
+geospatial indexes use `metadata.geo` in GeoJSON form, with coordinates always
+ordered as `[longitude, latitude]`. The Atlas Search definition indexes chunk
+text and titles while mapping the planned filter fields. There is deliberately
+no vector index yet because its required embedding dimension has not been
+selected.
+
 ## License
 
 MIT
