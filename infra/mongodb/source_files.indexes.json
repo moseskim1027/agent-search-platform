@@ -1,0 +1,7 @@
+{
+  "collection": "source_files",
+  "indexes": [
+    {"name": "file_id_unique", "key": {"file_id": 1}, "unique": true},
+    {"name": "metadata_geo_2dsphere", "key": {"metadata.geo": "2dsphere"}}
+  ]
+}

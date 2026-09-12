@@ -66,7 +66,7 @@ class SourceFile(BaseModel):
 
 
 class ChunkRecord(BaseModel):
-    """Atlas-ready partition derived from a source file; not generated yet."""
+    """Atlas-ready partition derived from a source file."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -78,6 +78,7 @@ class ChunkRecord(BaseModel):
     source_title: str = Field(min_length=1)
     source_url: HttpUrl
     text: str = Field(min_length=1)
+    content_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
     sequence: int = Field(ge=0)
     character_start: int = Field(ge=0)
     character_end: int = Field(ge=1)

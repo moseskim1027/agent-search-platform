@@ -1,0 +1,8 @@
+{
+  "collection": "chunks",
+  "indexes": [
+    {"name": "chunk_id_unique", "key": {"chunk_id": 1}, "unique": true},
+    {"name": "file_id_sequence", "key": {"file_id": 1, "sequence": 1}},
+    {"name": "metadata_geo_2dsphere", "key": {"metadata.geo": "2dsphere"}}
+  ]
+}

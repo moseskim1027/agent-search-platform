@@ -35,6 +35,36 @@ jobs:
       - name: Test
         run: pytest
 
+  mongodb-integration:
+    name: MongoDB integration
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install project and development dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Test MongoDB persistence
+        env:
+          MONGODB_URI: mongodb://localhost:27017
+        run: pytest -m integration
+
   container:
     name: Build container image
     runs-on: ubuntu-latest

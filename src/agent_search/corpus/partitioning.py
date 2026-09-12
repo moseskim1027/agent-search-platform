@@ -7,6 +7,7 @@ whitespace has been stripped by :func:`parse_raw_file`.  Consequently,
 for every emitted chunk.
 """
 
+import hashlib
 import re
 
 from agent_search.corpus.schemas import ChunkRecord, SourceFile
@@ -82,6 +83,7 @@ def partition_source_file(
                 source_title=source_file.title,
                 source_url=source_file.source_url,
                 text=body[start:end],
+                content_sha256=hashlib.sha256(body[start:end].encode("utf-8")).hexdigest(),
                 sequence=sequence,
                 character_start=start,
                 character_end=end,

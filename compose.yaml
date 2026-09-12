@@ -5,6 +5,30 @@ services:
     environment:
       APP_ENV: development
       LOG_LEVEL: INFO
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: agent_search
+      MONGODB_SOURCE_FILES_COLLECTION: source_files
+      MONGODB_CHUNKS_COLLECTION: chunks
     ports:
       - "8000:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
 
+  mongo:
+    image: mongo:7.0
+    environment:
+      MONGO_INITDB_DATABASE: agent_search
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+volumes:
+  mongo_data:
