@@ -132,6 +132,44 @@ docker compose down
 The integration test writes only to `agent_search_integration_test` and removes
 that database after the assertion run.
 
+## Lexical search API
+
+`POST /v1/search` provides a deterministic, dependency-free BM25 baseline over
+the generated chunks. It accepts a versioned request with `query`, optional
+filters, and a result limit. Filters cover domain, language, region, tag,
+category, publication-date range, and a geographic radius for location records.
+
+Every result is grounded evidence rather than an untraceable answer: it includes
+the chunk and file IDs, rank and score, exact chunk text, body-relative character
+offsets, source title and URL, publication date, and copied source metadata.
+Invalid request shapes, empty queries, out-of-range coordinates, and reversed
+date ranges return FastAPI validation errors.
+
+```bash
+curl -X POST http://127.0.0.1:8000/v1/search \
+  -H 'content-type: application/json' \
+  -d '{"query":"Busan cargo terminal weather","filters":{"region":"busan"}}'
+```
+
+The local retriever is intentionally separate from the Atlas Search adapter so
+both can be tested and measured independently. The Atlas adapter expresses the
+same text and metadata filtering shape, while this milestone remains runnable
+without Atlas credentials.
+
+To run the Atlas Search adapter smoke test locally, start the separate
+Search-enabled MongoDB profile. It provisions the checked-in search index,
+loads generated chunks, and executes the adapter's real `$search` pipeline:
+
+```bash
+docker compose --profile search up -d --wait mongo-search
+ATLAS_LOCAL_URI='mongodb://127.0.0.1:27018/?directConnection=true' \
+  python -m pytest -m atlas_local
+docker compose --profile search down
+```
+
+The `mongo-search` container uses `mongodb/mongodb-atlas-local` for local
+development and CI only; it is not a production Atlas deployment.
+
 ## License
 
 MIT

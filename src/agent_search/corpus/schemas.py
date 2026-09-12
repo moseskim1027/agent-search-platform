@@ -117,3 +117,80 @@ class RelevanceJudgment(BaseModel):
         if value == 0:
             raise ValueError("relevance judgments must be greater than zero")
         return value
+
+
+class GeographicRadius(BaseModel):
+    """A location filter expressed as a GeoJSON point plus a radius in meters."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    longitude: float = Field(ge=-180, le=180)
+    latitude: float = Field(ge=-90, le=90)
+    radius_meters: float = Field(gt=0, le=100_000)
+
+
+class SearchFilters(BaseModel):
+    """Optional metadata constraints shared by local and Atlas lexical retrieval."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    domain: Domain | None = None
+    language: str | None = Field(default=None, pattern=r"^[a-z]{2}$")
+    region: str | None = None
+    tag: str | None = None
+    category: str | None = None
+    published_from: date | None = None
+    published_to: date | None = None
+    geographic_radius: GeographicRadius | None = None
+
+
+class SearchResult(BaseModel):
+    """Repository-neutral grounded lexical retrieval result."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    chunk_id: str
+    file_id: str
+    rank: int = Field(ge=1)
+    score: float
+    text: str
+    character_start: int = Field(ge=0)
+    character_end: int = Field(ge=1)
+    source_title: str
+    source_url: HttpUrl
+    domain: Domain
+    language: str
+    published_at: date | None = None
+    metadata: SearchMetadata
+
+
+class SearchRequest(BaseModel):
+    """Versioned HTTP search request for grounded lexical retrieval."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = SCHEMA_VERSION
+    query: str = Field(min_length=1, max_length=500)
+    filters: SearchFilters = Field(default_factory=SearchFilters)
+    limit: int = Field(default=10, ge=1, le=50)
+
+    @field_validator("filters")
+    @classmethod
+    def date_range_is_valid(cls, filters: SearchFilters) -> SearchFilters:
+        """Reject date filters whose end precedes their start."""
+
+        if (
+            filters.published_from
+            and filters.published_to
+            and filters.published_from > filters.published_to
+        ):
+            raise ValueError("published_to must be on or after published_from")
+        return filters
+
+
+class SearchResponse(BaseModel):
+    """Versioned grounded search response containing evidence-only results."""
+
+    schema_version: str = SCHEMA_VERSION
+    query: str
+    results: list[SearchResult]

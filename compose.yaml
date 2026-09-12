@@ -30,5 +30,22 @@ services:
       retries: 12
       start_period: 5s
 
+  mongo-search:
+    image: mongodb/mongodb-atlas-local:latest
+    profiles: ["search"]
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_search_data:/data/db
+      - mongo_search_config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
+
 volumes:
   mongo_data:
+  mongo_search_data:
+  mongo_search_config:
