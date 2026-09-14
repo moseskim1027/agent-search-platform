@@ -21,4 +21,5 @@ Evidence-rich result contract
 ```
 
 Future pull requests will add partitioning and indexing layers behind retrieval,
-followed by a benchmark harness and operational instrumentation.
+followed by operational instrumentation. The checked-in evaluation harness now
+compares lexical, vector, and RRF rankings against chunk-level synthetic qrels.
