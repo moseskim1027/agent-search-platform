@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +17,12 @@ class Settings(BaseSettings):
     mongodb_database: str = "agent_search"
     mongodb_source_files_collection: str = "source_files"
     mongodb_chunks_collection: str = "chunks"
+    gemini_api_key: SecretStr | None = None
+    embedding_model: str = "gemini-embedding-2"
+    embedding_dimensions: int = 768
+    embedding_version: str = "gemini-embedding-2-768-l2-v1"
+    embedding_normalization: str = "l2"
+    rrf_k: int = 60
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
