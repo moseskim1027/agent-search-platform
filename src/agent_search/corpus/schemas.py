@@ -85,6 +85,9 @@ class ChunkRecord(BaseModel):
     published_at: date | None = None
     metadata: SearchMetadata
     embedding: list[float] | None = None
+    embedding_model: str | None = None
+    embedding_version: str | None = None
+    embedding_content_sha256: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
 
 
 class SearchQuery(BaseModel):
