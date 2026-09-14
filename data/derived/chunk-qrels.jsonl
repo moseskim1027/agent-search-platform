@@ -1,0 +1,15 @@
+{"chunk_id": "news-han-river-night-service-chunk-000", "query_id": "q-late-blue-line", "relevance": 3, "schema_version": "1.0"}
+{"chunk_id": "news-han-river-night-service-chunk-001", "query_id": "q-late-blue-line", "relevance": 3, "schema_version": "1.0"}
+{"chunk_id": "location-central-station-chunk-000", "query_id": "q-late-blue-line", "relevance": 2, "schema_version": "1.0"}
+{"chunk_id": "news-busan-port-weather-delay-chunk-000", "query_id": "q-busan-weather", "relevance": 3, "schema_version": "1.0"}
+{"chunk_id": "news-busan-port-weather-delay-chunk-001", "query_id": "q-busan-weather", "relevance": 3, "schema_version": "1.0"}
+{"chunk_id": "location-busan-north-terminal-chunk-000", "query_id": "q-busan-weather", "relevance": 2, "schema_version": "1.0"}
+{"chunk_id": "location-central-station-chunk-000", "query_id": "q-accessible-transfer", "relevance": 3, "schema_version": "1.0"}
+{"chunk_id": "news-han-river-night-service-chunk-000", "query_id": "q-accessible-transfer", "relevance": 1, "schema_version": "1.0"}
+{"chunk_id": "news-han-river-night-service-chunk-001", "query_id": "q-accessible-transfer", "relevance": 1, "schema_version": "1.0"}
+{"chunk_id": "news-seoul-mobility-shuttle-ko-chunk-000", "query_id": "q-night-shuttle", "relevance": 3, "schema_version": "1.0"}
+{"chunk_id": "location-riverside-park-chunk-000", "query_id": "q-night-shuttle", "relevance": 2, "schema_version": "1.0"}
+{"chunk_id": "news-orbit-battery-center-ko-chunk-000", "query_id": "q-battery-recycling", "relevance": 3, "schema_version": "1.0"}
+{"chunk_id": "location-busan-north-terminal-chunk-000", "query_id": "q-cargo-gate-times", "relevance": 3, "schema_version": "1.0"}
+{"chunk_id": "news-busan-port-weather-delay-chunk-000", "query_id": "q-cargo-gate-times", "relevance": 1, "schema_version": "1.0"}
+{"chunk_id": "news-busan-port-weather-delay-chunk-001", "query_id": "q-cargo-gate-times", "relevance": 1, "schema_version": "1.0"}

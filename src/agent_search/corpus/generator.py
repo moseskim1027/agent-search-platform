@@ -10,6 +10,7 @@ from pathlib import Path
 from agent_search.corpus.partitioning import partition_source_files
 from agent_search.corpus.schemas import (
     ChunkRecord,
+    ChunkRelevanceJudgment,
     Domain,
     GeoPoint,
     RelevanceJudgment,
@@ -129,8 +130,26 @@ def build_judgments() -> list[RelevanceJudgment]:
     ]
 
 
+def build_chunk_judgments() -> list[ChunkRelevanceJudgment]:
+    """Expand reviewed file relevance labels across their inspected source chunks."""
+
+    chunks_by_file: dict[str, list[ChunkRecord]] = {}
+    for chunk in partition_source_files(build_source_files()):
+        chunks_by_file.setdefault(chunk.file_id, []).append(chunk)
+    return [
+        ChunkRelevanceJudgment(
+            query_id=judgment.query_id, chunk_id=chunk.chunk_id, relevance=judgment.relevance
+        )
+        for judgment in build_judgments()
+        for chunk in chunks_by_file[judgment.file_id]
+    ]
+
+
 def write_jsonl(
-    records: Iterable[SourceFile | ChunkRecord | SearchQuery | RelevanceJudgment], path: Path
+    records: Iterable[
+        SourceFile | ChunkRecord | SearchQuery | RelevanceJudgment | ChunkRelevanceJudgment
+    ],
+    path: Path,
 ) -> None:
     """Write records as stable, newline-delimited JSON for source-control-friendly diffs."""
 
@@ -153,6 +172,7 @@ def generate_fixtures(
     write_jsonl(partition_source_files(source_files), output_directory / "chunks.jsonl")
     write_jsonl(build_queries(), output_directory / "queries.jsonl")
     write_jsonl(build_judgments(), output_directory / "qrels.jsonl")
+    write_jsonl(build_chunk_judgments(), output_directory / "chunk-qrels.jsonl")
 
 
 def parse_args() -> argparse.Namespace:
