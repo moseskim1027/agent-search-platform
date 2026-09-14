@@ -170,6 +170,34 @@ docker compose --profile search down
 The `mongo-search` container uses `mongodb/mongodb-atlas-local` for local
 development and CI only; it is not a production Atlas deployment.
 
+## Semantic and hybrid retrieval
+
+The selected semantic contract is Gemini `gemini-embedding-2`, requested at 768
+dimensions and L2 normalized. The model name, dimensions, normalization,
+embedding version, and content checksum are stored with each vector. This lets
+the embedding command resume safely: it only sends chunks with absent vectors,
+a changed chunk checksum, or a changed embedding contract.
+
+Copy `.env.example` to the ignored `.env` file, then set `GEMINI_API_KEY` to a
+Gemini Developer API key. Keep the remaining embedding values aligned as a
+single contract: `EMBEDDING_MODEL=gemini-embedding-2`,
+`EMBEDDING_DIMENSIONS=768`, `EMBEDDING_VERSION=gemini-embedding-2-768-l2-v1`,
+and `EMBEDDING_NORMALIZATION=l2`. Never place the API key in `.env.example` or
+commit `.env`.
+
+Generate a separate, uncommitted vector artifact:
+
+```bash
+python -m agent_search.corpus.embeddings
+```
+
+The command reads `data/derived/chunks.jsonl` and writes
+`data/derived/chunks.embedded.jsonl`; raw inputs and the baseline generated
+fixture remain unchanged. The checked-in Atlas Vector Search definition is
+`infra/mongodb/chunks.vector-search-index.json`. Local BM25 and vector retrieval
+remain independent, and `HybridRetriever` combines their candidate lists with
+deterministic reciprocal-rank fusion (RRF, default `k=60`).
+
 ## License
 
 MIT
