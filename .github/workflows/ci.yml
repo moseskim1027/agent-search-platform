@@ -35,6 +35,24 @@ jobs:
       - name: Test
         run: pytest
 
+  api-contract:
+    name: API contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install project and development dependencies
+        run: python -m pip install -e '.[dev]'
+
+      - name: Test grounded search API contract
+        run: pytest tests/test_search_api.py tests/test_health.py
+
   mongodb-integration:
     name: MongoDB integration
     runs-on: ubuntu-latest
