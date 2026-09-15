@@ -62,7 +62,7 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-cmd "mongosh --quiet --eval 'quit(db.hello().isWritablePrimary ? 0 : 1)'"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 12
@@ -92,7 +92,7 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-cmd "mongosh --quiet --eval 'quit(db.hello().isWritablePrimary ? 0 : 1)'"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 24

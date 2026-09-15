@@ -24,7 +24,8 @@ services:
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "quit(db.hello().isWritablePrimary ? 0 : 1)"]
       interval: 5s
       timeout: 5s
       retries: 12
@@ -39,7 +40,8 @@ services:
       - mongo_search_data:/data/db
       - mongo_search_config:/data/configdb
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "quit(db.hello().isWritablePrimary ? 0 : 1)"]
       interval: 5s
       timeout: 5s
       retries: 24

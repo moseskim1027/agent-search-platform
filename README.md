@@ -1,14 +1,33 @@
 # Agent Search Platform
 
+[![CI](https://github.com/moseskim1027/agent-search-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/moseskim1027/agent-search-platform/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit)
+
 A production-oriented reference project for grounded, multi-domain search APIs.
 It will combine lexical retrieval, vector retrieval, rank fusion, reranking, and
 evidence-rich results that an AI agent can safely consume.
 
 ## Status
 
-The foundation is in place. The current service exposes health and metadata
-endpoints; retrieval, indexing, evaluation, and observability will arrive in
-separate, reviewable pull requests.
+The reference implementation includes lexical and vector retrieval primitives,
+grounded search, synthetic evaluation, and request observability. All committed
+corpus artifacts are fictional.
+
+## Architecture
+
+```text
+fictional Markdown sources
+          │
+          ▼
+ingestion → source files → deterministic chunks → MongoDB / Atlas indexes
+                              │                     │
+                              ├─ BM25 lexical ──────┤
+                              └─ Gemini vectors ────┤
+                                                    ▼
+client → FastAPI /v1/search ← RRF fusion ← ranked grounded evidence
+              │
+              └─ query-safe logs, metrics, ranking version
+```
 
 ## Goals
 
@@ -56,15 +75,6 @@ calls `/health`. Stop the service with `docker compose down`.
 GitHub Actions runs Ruff, the test suite, and a Docker image build for every
 pull request and for changes merged to `main`.
 
-## Planned delivery sequence
-
-1. Foundation: application structure, configuration, local developer workflow.
-2. Raw corpus ingestion: file-level records, provenance, and relevance labels.
-3. Partitioning: metadata-preserving chunks derived from source files.
-4. Retrieval: BM25, vector search, and reciprocal-rank fusion.
-5. Search contract: grounded results, filtering, and failure handling.
-6. Evaluation and operations: benchmark suite, metrics, caching, and dashboards.
-
 ## Project layout
 
 ```text
@@ -110,9 +120,8 @@ explicit.
 Reviewable MongoDB index definitions are in `infra/mongodb/`. The standard
 geospatial indexes use `metadata.geo` in GeoJSON form, with coordinates always
 ordered as `[longitude, latitude]`. The Atlas Search definition indexes chunk
-text and titles while mapping the planned filter fields. There is deliberately
-no vector index yet because its required embedding dimension has not been
-selected.
+text and titles while mapping the planned filter fields. The checked-in vector
+definition uses the selected Gemini 768-dimensional embedding contract.
 
 `docker compose up --build` also starts a MongoDB 7 container for local
 integration work. The API receives its service-local connection string from
@@ -170,6 +179,27 @@ docker compose --profile search down
 The `mongo-search` container uses `mongodb/mongodb-atlas-local` for local
 development and CI only; it is not a production Atlas deployment.
 
+### End-to-end grounded result
+
+```json
+{
+  "query": "Busan cargo terminal weather",
+  "ranking_version": "lexical-bm25-v1",
+  "degraded": false,
+  "results": [{
+    "chunk_id": "news-busan-port-weather-delay-chunk-000",
+    "source_url": "https://example.invalid/news/busan-port-weather-delay",
+    "character_start": 0,
+    "character_end": 1022,
+    "text": "...",
+    "metadata": {"region": "busan", "tags": ["cargo", "weather"]}
+  }]
+}
+```
+
+An agent can cite the returned source URL and inspect the exact body-relative
+chunk range; it never needs to trust an unsupported generated answer.
+
 ## Semantic and hybrid retrieval
 
 The selected semantic contract is Gemini `gemini-embedding-2`, requested at 768
@@ -198,6 +228,48 @@ fixture remain unchanged. The checked-in Atlas Vector Search definition is
 remain independent, and `HybridRetriever` combines their candidate lists with
 deterministic reciprocal-rank fusion (RRF, default `k=60`).
 
+### Semantic-hybrid demo
+
+Run a credential-free demonstration of BM25 plus vector ranking fused with RRF:
+
+```bash
+python examples/hybrid_retrieval_demo.py "Busan cargo terminal weather delay"
+```
+
+It prints ranked, grounded chunk IDs, source titles, and source URLs. The demo
+uses the deterministic hash embedder so it is reproducible without an API key;
+the production embedding workflow above uses Gemini.
+
+For the production Atlas design—rather than this local demo—see
+[`docs/production-vector-search.md`](docs/production-vector-search.md). It
+covers ingestion, vector indexing, `$vectorSearch`, RRF, failure fallback, and
+operational telemetry.
+
+To run the deterministic Atlas Local vector integration test (no Gemini key):
+
+```text
+Deterministic hash vectors
+            │
+            ▼
+     Atlas Local Docker
+            │
+            ▼
+   chunk_vector_768 index
+            │
+            ▼
+$vectorSearch + metadata filter
+            │
+            ▼
+ Grounded evidence assertions
+```
+
+```bash
+docker compose --profile search up -d --wait mongo-search
+ATLAS_LOCAL_URI='mongodb://127.0.0.1:27018/?directConnection=true' \
+  python -m pytest -m atlas_local
+docker compose --profile search down
+```
+
 ## Evaluation
 
 `data/derived/chunk-qrels.jsonl` contains graded chunk-level relevance labels
@@ -214,6 +286,16 @@ degraded. Search logs use a caller-supplied `X-Correlation-ID` (or generated
 UUID), a query hash rather than raw query text, applied filters, result count,
 and retrieval latency. `GET /metrics` exposes Prometheus-style request, result,
 and cache-hit counters for local monitoring.
+
+## Retrieval tradeoffs
+
+Files remain canonical provenance records; chunks are the retrieval units, so a
+chunk can be ranked and cited without losing its originating file. Filterable
+metadata is copied to chunks to make filtering a single-index operation. BM25
+is fast and transparent for exact terms; vectors help semantic matches; RRF
+combines both rankings without forcing their raw scores onto the same scale.
+Introduce a reranker only when benchmark errors show its extra latency is worth
+the tradeoff.
 
 ## License
 
