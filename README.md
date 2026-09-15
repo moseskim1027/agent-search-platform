@@ -240,6 +240,11 @@ It prints ranked, grounded chunk IDs, source titles, and source URLs. The demo
 uses the deterministic hash embedder so it is reproducible without an API key;
 the production embedding workflow above uses Gemini.
 
+For the production Atlas design—rather than this local demo—see
+[`docs/production-vector-search.md`](docs/production-vector-search.md). It
+covers ingestion, vector indexing, `$vectorSearch`, RRF, failure fallback, and
+operational telemetry.
+
 ## Evaluation
 
 `data/derived/chunk-qrels.jsonl` contains graded chunk-level relevance labels
