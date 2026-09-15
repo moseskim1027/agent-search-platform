@@ -198,6 +198,15 @@ fixture remain unchanged. The checked-in Atlas Vector Search definition is
 remain independent, and `HybridRetriever` combines their candidate lists with
 deterministic reciprocal-rank fusion (RRF, default `k=60`).
 
+## Evaluation
+
+`data/derived/chunk-qrels.jsonl` contains graded chunk-level relevance labels
+derived from the reviewed fictional corpus. The evaluation harness calculates
+Recall@k, MRR@k, and nDCG@k for lexical, vector, and RRF retrieval. The current
+Gemini-backed synthetic benchmark is recorded in
+[`docs/benchmark-report.md`](docs/benchmark-report.md); it is a reproducible
+contract check, not a production-performance claim.
+
 ## License
 
 MIT

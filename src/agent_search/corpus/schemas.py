@@ -122,6 +122,17 @@ class RelevanceJudgment(BaseModel):
         return value
 
 
+class ChunkRelevanceJudgment(BaseModel):
+    """A graded query-chunk label used by retrieval evaluation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = SCHEMA_VERSION
+    query_id: str = Field(pattern=r"^q-[a-z0-9-]+$")
+    chunk_id: str = Field(pattern=r"^(location|news)-[a-z0-9-]+-chunk-[0-9]{3}$")
+    relevance: int = Field(ge=1, le=3)
+
+
 class GeographicRadius(BaseModel):
     """A location filter expressed as a GeoJSON point plus a radius in meters."""
 
