@@ -75,15 +75,6 @@ calls `/health`. Stop the service with `docker compose down`.
 GitHub Actions runs Ruff, the test suite, and a Docker image build for every
 pull request and for changes merged to `main`.
 
-## Planned delivery sequence
-
-1. Foundation: application structure, configuration, local developer workflow.
-2. Raw corpus ingestion: file-level records, provenance, and relevance labels.
-3. Partitioning: metadata-preserving chunks derived from source files.
-4. Retrieval: BM25, vector search, and reciprocal-rank fusion.
-5. Search contract: grounded results, filtering, and failure handling.
-6. Evaluation and operations: benchmark suite, metrics, caching, and dashboards.
-
 ## Project layout
 
 ```text
