@@ -228,6 +228,18 @@ fixture remain unchanged. The checked-in Atlas Vector Search definition is
 remain independent, and `HybridRetriever` combines their candidate lists with
 deterministic reciprocal-rank fusion (RRF, default `k=60`).
 
+### Semantic-hybrid demo
+
+Run a credential-free demonstration of BM25 plus vector ranking fused with RRF:
+
+```bash
+python examples/hybrid_retrieval_demo.py "Busan cargo terminal weather delay"
+```
+
+It prints ranked, grounded chunk IDs, source titles, and source URLs. The demo
+uses the deterministic hash embedder so it is reproducible without an API key;
+the production embedding workflow above uses Gemini.
+
 ## Evaluation
 
 `data/derived/chunk-qrels.jsonl` contains graded chunk-level relevance labels
