@@ -135,10 +135,21 @@ flowchart LR
 | Gemini embedding quality and quotas | No | Gemini Developer API |
 | Atlas managed-cluster scale, IAM, and network behavior | No | A real Atlas project |
 
-The current repository already runs the first two categories in CI and provides
-an Atlas Local profile for text-search integration. A full local vector-DB test
-would add a `LocalAtlasVectorSearchAdapter`, load `chunks.embedded.jsonl` into
-the Atlas Local container, wait for `chunk_vector_768` to become ready, then
-assert its `$vectorSearch` results and filter behavior. Use the hash embedder
-for a fully offline contract test, or Gemini for an end-to-end semantic smoke
-test; do not characterize either tiny local run as production quality.
+For a local semantic-hybrid demonstration, run
+`python examples/hybrid_retrieval_demo.py`. It generates deterministic vectors
+in-process and needs neither Docker nor Gemini. The Atlas Local CI profile also
+creates `chunk_vector_768`, loads deterministic 768-dimensional vectors, and
+executes a real `$vectorSearch` aggregation with metadata filtering. It uses the
+hash embedder so this integration test needs no Gemini credential. Do not
+characterize either tiny local run as production quality.
+
+Both local Compose and GitHub Actions wait for Atlas Local's replica set to
+become a writable primary—not merely answer `ping`—before running integration
+tests. Run the same production-parity check locally with:
+
+```bash
+docker compose --profile search up -d --wait mongo-search
+ATLAS_LOCAL_URI='mongodb://127.0.0.1:27018/?directConnection=true' \
+  python -m pytest -m atlas_local
+docker compose --profile search down
+```

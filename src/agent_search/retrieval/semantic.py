@@ -86,6 +86,41 @@ class LocalVectorRetriever:
         ]
 
 
+class AtlasVectorSearchAdapter:
+    """Build an Atlas Vector Search pipeline without owning a Mongo client."""
+
+    def pipeline(
+        self,
+        query_embedding: Sequence[float],
+        filters: SearchFilters,
+        *,
+        limit: int,
+        num_candidates: int = 100,
+    ) -> list[dict[str, object]]:
+        if limit < 1 or num_candidates < limit:
+            raise ValueError("num_candidates must be at least limit and both must be positive")
+        vector_filter = {
+            path: value
+            for path, value in (
+                ("domain", filters.domain),
+                ("language", filters.language),
+                ("metadata.region", filters.region),
+                ("metadata.category", filters.category),
+            )
+            if value is not None
+        }
+        stage: dict[str, object] = {
+            "index": "chunk_vector_768",
+            "path": "embedding",
+            "queryVector": list(query_embedding),
+            "numCandidates": num_candidates,
+            "limit": limit,
+        }
+        if vector_filter:
+            stage["filter"] = vector_filter
+        return [{"$vectorSearch": stage}, {"$set": {"score": {"$meta": "vectorSearchScore"}}}]
+
+
 class HybridRetriever:
     """Run lexical and vector retrieval independently, then fuse their rankings."""
 
