@@ -245,6 +245,15 @@ For the production Atlas design—rather than this local demo—see
 covers ingestion, vector indexing, `$vectorSearch`, RRF, failure fallback, and
 operational telemetry.
 
+To run the deterministic Atlas Local vector integration test (no Gemini key):
+
+```bash
+docker compose --profile search up -d --wait mongo-search
+ATLAS_LOCAL_URI='mongodb://127.0.0.1:27018/?directConnection=true' \
+  python -m pytest -m atlas_local
+docker compose --profile search down
+```
+
 ## Evaluation
 
 `data/derived/chunk-qrels.jsonl` contains graded chunk-level relevance labels
