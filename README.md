@@ -247,6 +247,14 @@ operational telemetry.
 
 To run the deterministic Atlas Local vector integration test (no Gemini key):
 
+```mermaid
+flowchart LR
+    A[Deterministic hash vectors] --> B[Atlas Local Docker]
+    B --> C[chunk_vector_768 index]
+    C --> D[$vectorSearch + metadata filter]
+    D --> E[Grounded evidence assertions]
+```
+
 ```bash
 docker compose --profile search up -d --wait mongo-search
 ATLAS_LOCAL_URI='mongodb://127.0.0.1:27018/?directConnection=true' \
