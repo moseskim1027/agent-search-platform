@@ -247,12 +247,20 @@ operational telemetry.
 
 To run the deterministic Atlas Local vector integration test (no Gemini key):
 
-```mermaid
-flowchart LR
-    A[Deterministic hash vectors] --> B[Atlas Local Docker]
-    B --> C[chunk_vector_768 index]
-    C --> D[$vectorSearch + metadata filter]
-    D --> E[Grounded evidence assertions]
+```text
+Deterministic hash vectors
+            │
+            ▼
+     Atlas Local Docker
+            │
+            ▼
+   chunk_vector_768 index
+            │
+            ▼
+$vectorSearch + metadata filter
+            │
+            ▼
+ Grounded evidence assertions
 ```
 
 ```bash
