@@ -12,6 +12,8 @@ def test_search_returns_ranked_grounded_evidence() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["schema_version"] == "1.0"
+    assert payload["ranking_version"] == "lexical-bm25-v1"
+    assert payload["degraded"] is False
     assert payload["results"]
     evidence = payload["results"][0]
     assert {
@@ -35,3 +37,13 @@ def test_search_rejects_invalid_filter_ranges() -> None:
 
     assert response.status_code == 422
     assert "published_to must be on or after published_from" in response.text
+
+
+def test_search_exposes_prometheus_counters() -> None:
+    client = TestClient(app)
+    client.post("/v1/search", json={"query": "cargo"})
+
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "agent_search_requests_total" in response.text

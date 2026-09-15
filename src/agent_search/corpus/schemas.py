@@ -208,3 +208,6 @@ class SearchResponse(BaseModel):
     schema_version: str = SCHEMA_VERSION
     query: str
     results: list[SearchResult]
+    ranking_version: str
+    degraded: bool = False
+    degradation_reason: str | None = None

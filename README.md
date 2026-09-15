@@ -207,6 +207,14 @@ Gemini-backed synthetic benchmark is recorded in
 [`docs/benchmark-report.md`](docs/benchmark-report.md); it is a reproducible
 contract check, not a production-performance claim.
 
+## Observability
+
+Every search response identifies its `ranking_version` and whether retrieval was
+degraded. Search logs use a caller-supplied `X-Correlation-ID` (or generated
+UUID), a query hash rather than raw query text, applied filters, result count,
+and retrieval latency. `GET /metrics` exposes Prometheus-style request, result,
+and cache-hit counters for local monitoring.
+
 ## License
 
 MIT
