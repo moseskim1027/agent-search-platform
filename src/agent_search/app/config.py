@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     embedding_version: str = "gemini-embedding-2-768-l2-v1"
     embedding_normalization: str = "l2"
     rrf_k: int = 60
+    ranking_version: str = "lexical-bm25-v1"
+    search_cache_ttl_seconds: int = 60
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
