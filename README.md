@@ -203,6 +203,22 @@ alias (for example `agent-search-chunks-current`) to make versioned reindexing
 and rollback atomic. The next OpenSearch ingestion milestone will bulk-index
 only changed chunk/embedding contracts and promote an alias after validation.
 
+### Resumable OpenSearch ingestion
+
+After generating the uncommitted Gemini-embedded JSONL artifact, run the
+ingestion worker against a versioned target index:
+
+```bash
+python -m agent_search.corpus.opensearch_ingestion
+```
+
+The worker validates that every vector has the configured dimension and
+embedding version, reads existing chunk metadata in bounded batches, and bulk
+indexes only missing or changed embedding/provenance contracts. Set
+`OPENSEARCH_WRITE_ALIAS` and pass `--promote-alias` only after validating the
+new target index; promotion uses OpenSearch's atomic alias update API, providing
+a rollback point by repointing the alias to the prior index.
+
 To run the Atlas Search adapter smoke test locally, start the separate
 Search-enabled MongoDB profile. It provisions the checked-in search index,
 loads generated chunks, and executes the adapter's real `$search` pipeline:
