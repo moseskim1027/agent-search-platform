@@ -22,7 +22,7 @@ class OpenSearchBulkClient(Protocol):
     def mget(self, *, index: str, body: dict[str, object]) -> dict[str, object]: ...
 
     def bulk(
-        self, *, body: list[dict[str, object]], request_timeout: float
+        self, *, body: list[dict[str, object]], request_timeout: float, refresh: str
     ) -> dict[str, object]: ...
 
 
@@ -117,11 +117,13 @@ class OpenSearchChunkIngester:
         for chunk in chunks:
             actions.extend(
                 [
-                    {"index": {"_id": chunk.chunk_id}},
+                    {"index": {"_index": self.index, "_id": chunk.chunk_id}},
                     {**chunk.model_dump(mode="json"), "ingestion_version": INGESTION_VERSION},
                 ]
             )
-        response = self.client.bulk(body=actions, request_timeout=self.request_timeout_seconds)
+        response = self.client.bulk(
+            body=actions, request_timeout=self.request_timeout_seconds, refresh="wait_for"
+        )
         if response.get("errors"):
             raise OpenSearchIngestionError("OpenSearch rejected one or more bulk indexing actions")
 

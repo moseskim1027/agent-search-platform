@@ -34,6 +34,7 @@ testpaths = ["tests"]
 markers = [
   "integration: requires an explicitly configured MongoDB instance",
   "atlas_local: requires the MongoDB Atlas Local Search container",
+  "opensearch_local: requires the local OpenSearch Docker container",
 ]
 
 [tool.ruff]
