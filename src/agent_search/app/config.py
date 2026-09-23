@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     opensearch_vector_field: str = "embedding"
     opensearch_request_timeout_seconds: float = 3.0
     opensearch_verify_certs: bool = True
+    opensearch_write_alias: str | None = None
+    opensearch_ingestion_batch_size: int = 250
 
     @model_validator(mode="after")
     def opensearch_settings_are_complete(self) -> "Settings":
@@ -45,6 +47,8 @@ class Settings(BaseSettings):
             raise ValueError("OPENSEARCH_URL is required when SEARCH_BACKEND=opensearch")
         if self.opensearch_password and not self.opensearch_username:
             raise ValueError("OPENSEARCH_USERNAME is required when OPENSEARCH_PASSWORD is set")
+        if self.opensearch_ingestion_batch_size < 1:
+            raise ValueError("OPENSEARCH_INGESTION_BATCH_SIZE must be positive")
         return self
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
