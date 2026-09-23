@@ -23,16 +23,16 @@ synthetic Markdown → source records → deterministic chunks ─────�
                                                                     │
                                        ┌─ MongoDB / Atlas indexes   │
                                        │                            │
-Gemini embeddings → embedded JSONL → OpenSearch bulk worker ───────┘
-                                      │ validates dimension + version
-                                      ▼
+Gemini embeddings → embedded JSONL → OpenSearch bulk worker ───-────┘
+                                       │ validates dimension + version
+                                       ▼
                          versioned OpenSearch k-NN index
-                                      │
-                                      └── atomic alias promotion
+                                       │
+                                       └── atomic alias promotion
 
                               RETRIEVAL
 
-client → POST /v1/search → bounded TTL cache ─┬─ local BM25 baseline
+client → POST /v1/search → bounded TTL cache -─┬─- local BM25 baseline
                                                │
                                                └─ Gemini query embedding
                                                         │
