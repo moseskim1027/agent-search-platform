@@ -9,11 +9,59 @@ services:
       MONGODB_DATABASE: agent_search
       MONGODB_SOURCE_FILES_COLLECTION: source_files
       MONGODB_CHUNKS_COLLECTION: chunks
+      SEARCH_BACKEND: ${SEARCH_BACKEND:-local}
+      OPENSEARCH_URL: ${OPENSEARCH_URL:-http://opensearch:9200}
+      OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_PASSWORD:-}
+      OPENSEARCH_INDEX: ${OPENSEARCH_INDEX:-agent-search-chunks-v1}
+      OPENSEARCH_INDEX_VERSION: ${OPENSEARCH_INDEX_VERSION:-opensearch-chunks-v1}
+      OPENSEARCH_VECTOR_FIELD: ${OPENSEARCH_VECTOR_FIELD:-embedding}
+      OPENSEARCH_REQUEST_TIMEOUT_SECONDS: ${OPENSEARCH_REQUEST_TIMEOUT_SECONDS:-3}
+      OPENSEARCH_VERIFY_CERTS: ${OPENSEARCH_VERIFY_CERTS:-true}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-gemini-embedding-2}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-768}
+      EMBEDDING_VERSION: ${EMBEDDING_VERSION:-gemini-embedding-2-768-l2-v1}
     ports:
       - "8000:8000"
     depends_on:
       mongo:
         condition: service_healthy
+      opensearch-init:
+        condition: service_completed_successfully
+        required: false
+
+  opensearch:
+    image: opensearchproject/opensearch:2.19.1
+    profiles: ["opensearch"]
+    environment:
+      discovery.type: single-node
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  opensearch-init:
+    image: curlimages/curl:8.13.0
+    profiles: ["opensearch"]
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    volumes:
+      - ./infra/opensearch/chunks-v1.index.json:/schema/chunks-v1.index.json:ro
+    entrypoint: ["/bin/sh", "-ec"]
+    command: >-
+      curl -fsS http://opensearch:9200/agent-search-chunks-v1 >/dev/null ||
+      curl -fsS -X PUT http://opensearch:9200/agent-search-chunks-v1
+      -H 'content-type: application/json'
+      --data-binary @/schema/chunks-v1.index.json
 
   mongo:
     image: mongo:7.0

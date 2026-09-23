@@ -30,3 +30,10 @@ def test_settings_accept_gemini_api_key() -> None:
 
     assert settings.gemini_api_key is not None
     assert settings.gemini_api_key.get_secret_value() == "test-key"
+
+
+def test_opensearch_backend_requires_url_and_exposes_registry() -> None:
+    settings = Settings(search_backend="opensearch", opensearch_url="https://search.example.invalid")
+
+    assert settings.opensearch_index == "agent-search-chunks-v1"
+    assert settings.opensearch_index_version == "opensearch-chunks-v1"

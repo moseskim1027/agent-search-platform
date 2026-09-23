@@ -165,6 +165,44 @@ both can be tested and measured independently. The Atlas adapter expresses the
 same text and metadata filtering shape, while this milestone remains runnable
 without Atlas credentials.
 
+## OpenSearch vector retrieval
+
+OpenSearch is a vector-search engine: its k-NN plugin stores embeddings in a
+`knn_vector` field and runs approximate nearest-neighbour (ANN) queries. This
+repository's OpenSearch contract is versioned independently at
+[`infra/opensearch/chunks-v1.index.json`](infra/opensearch/chunks-v1.index.json).
+It uses a 768-dimensional Gemini embedding, cosine similarity, and Lucene HNSW
+with filters evaluated inside the k-NN query. The source document retains the
+same evidence fields used by the API, while the embedding itself is excluded
+from responses.
+
+The service defaults to `SEARCH_BACKEND=local`. To enable remote retrieval, set
+`SEARCH_BACKEND=opensearch`, `OPENSEARCH_URL`, and the Gemini credentials in an
+ignored `.env`. `OPENSEARCH_INDEX_VERSION` is emitted as `ranking_version`,
+which gives agents a stable signal for the index and ranking contract they used.
+If the embedding provider or cluster is unavailable, the response falls back to
+the deterministic lexical baseline with `degraded: true` and
+`degradation_reason: "opensearch_unavailable"`; callers can choose to retry or
+use the grounded fallback safely.
+
+For a fully Dockerized local stack (not a production security configuration),
+place a Gemini key in `.env`, set `SEARCH_BACKEND=opensearch`, then run:
+
+```bash
+docker compose --profile opensearch up --build --wait
+```
+
+This starts the API, MongoDB, OpenSearch, and a one-shot `opensearch-init`
+container that creates the versioned index only if it is absent. Use `docker
+compose down` when stopping the local stack; remove the index only when
+deliberately resetting local search data.
+
+Production clusters should use TLS verification, a least-privilege service
+account, snapshot policies, replicas across availability zones, and an index
+alias (for example `agent-search-chunks-current`) to make versioned reindexing
+and rollback atomic. The next OpenSearch ingestion milestone will bulk-index
+only changed chunk/embedding contracts and promote an alias after validation.
+
 To run the Atlas Search adapter smoke test locally, start the separate
 Search-enabled MongoDB profile. It provisions the checked-in search index,
 loads generated chunks, and executes the adapter's real `$search` pipeline:
