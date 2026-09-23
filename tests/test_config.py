@@ -1,3 +1,5 @@
+import pytest
+
 from agent_search.app.config import Settings
 
 
@@ -33,7 +35,14 @@ def test_settings_accept_gemini_api_key() -> None:
 
 
 def test_opensearch_backend_requires_url_and_exposes_registry() -> None:
-    settings = Settings(search_backend="opensearch", opensearch_url="https://search.example.invalid")
+    settings = Settings(
+        search_backend="opensearch", opensearch_url="https://search.example.invalid"
+    )
 
     assert settings.opensearch_index == "agent-search-chunks-v1"
     assert settings.opensearch_index_version == "opensearch-chunks-v1"
+
+
+def test_settings_reject_invalid_cache_capacity() -> None:
+    with pytest.raises(ValueError, match="search cache"):
+        Settings(search_cache_max_entries=0)

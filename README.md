@@ -339,7 +339,9 @@ Every search response identifies its `ranking_version` and whether retrieval was
 degraded. Search logs use a caller-supplied `X-Correlation-ID` (or generated
 UUID), a query hash rather than raw query text, applied filters, result count,
 and retrieval latency. `GET /metrics` exposes Prometheus-style request, result,
-and cache-hit counters for local monitoring.
+and cache-hit counters for local monitoring. Search responses are cached in a
+thread-safe, bounded LRU cache; `SEARCH_CACHE_TTL_SECONDS` prevents stale
+evidence from being served and `SEARCH_CACHE_MAX_ENTRIES` caps process memory.
 
 ## Retrieval tradeoffs
 

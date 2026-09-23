@@ -6,6 +6,7 @@ from uuid import uuid4
 from fastapi import FastAPI, Request, Response
 from pydantic import BaseModel
 
+from agent_search.app.cache import TTLCache
 from agent_search.app.config import get_settings
 from agent_search.app.observability import SearchMetrics, log_search, query_hash
 from agent_search.corpus.generator import build_source_files
@@ -26,7 +27,10 @@ app = FastAPI(
 )
 retriever = LocalBM25Retriever(partition_source_files(build_source_files()))
 metrics = SearchMetrics()
-cache: dict[str, SearchResponse] = {}
+cache = TTLCache[SearchResponse](
+    ttl_seconds=settings.search_cache_ttl_seconds,
+    max_entries=settings.search_cache_max_entries,
+)
 
 
 def _opensearch_retriever() -> OpenSearchVectorSearchAdapter:
@@ -92,7 +96,7 @@ def search(request: SearchRequest, http_request: Request) -> SearchResponse:
         f"{request.query.strip().lower()}:{request.filters.model_dump_json()}:{request.limit}"
     )
     cached = cache.get(cache_key)
-    if cached:
+    if cached is not None:
         metrics.record(status="ok", result_count=len(cached.results), cache_hit=True)
         return cached
     started = perf_counter()
@@ -132,7 +136,7 @@ def search(request: SearchRequest, http_request: Request) -> SearchResponse:
         degraded=degraded,
         degradation_reason=degradation_reason,
     )
-    cache[cache_key] = response
+    cache.put(cache_key, response)
     elapsed_ms = (perf_counter() - started) * 1_000
     metrics.record(status="ok", result_count=len(response.results), cache_hit=False)
     log_search(

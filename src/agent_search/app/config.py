@@ -49,6 +49,8 @@ class Settings(BaseSettings):
             raise ValueError("OPENSEARCH_USERNAME is required when OPENSEARCH_PASSWORD is set")
         if self.opensearch_ingestion_batch_size < 1:
             raise ValueError("OPENSEARCH_INGESTION_BATCH_SIZE must be positive")
+        if self.search_cache_ttl_seconds < 1 or self.search_cache_max_entries < 1:
+            raise ValueError("search cache TTL and capacity must be positive")
         return self
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
