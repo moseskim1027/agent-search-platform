@@ -9,11 +9,31 @@ services:
       MONGODB_DATABASE: agent_search
       MONGODB_SOURCE_FILES_COLLECTION: source_files
       MONGODB_CHUNKS_COLLECTION: chunks
+      SEARCH_BACKEND: ${SEARCH_BACKEND:-local}
+      OPENSEARCH_URL: ${OPENSEARCH_URL:-http://opensearch:9200}
+      OPENSEARCH_INDEX: ${OPENSEARCH_INDEX:-agent-search-chunks-v1}
     ports:
       - "8000:8000"
     depends_on:
       mongo:
         condition: service_healthy
+
+  opensearch:
+    image: opensearchproject/opensearch:2.19.1
+    profiles: ["opensearch"]
+    environment:
+      discovery.type: single-node
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
 
   mongo:
     image: mongo:7.0

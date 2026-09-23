@@ -1,8 +1,9 @@
 """Application configuration."""
 
 from functools import lru_cache
+from typing import Literal
 
-from pydantic import SecretStr
+from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,6 +26,26 @@ class Settings(BaseSettings):
     rrf_k: int = 60
     ranking_version: str = "lexical-bm25-v1"
     search_cache_ttl_seconds: int = 60
+    search_cache_max_entries: int = 1_000
+    search_backend: Literal["local", "opensearch"] = "local"
+    opensearch_url: str | None = None
+    opensearch_username: str | None = None
+    opensearch_password: SecretStr | None = None
+    opensearch_index: str = "agent-search-chunks-v1"
+    opensearch_index_version: str = "opensearch-chunks-v1"
+    opensearch_vector_field: str = "embedding"
+    opensearch_request_timeout_seconds: float = 3.0
+    opensearch_verify_certs: bool = True
+
+    @model_validator(mode="after")
+    def opensearch_settings_are_complete(self) -> "Settings":
+        """Reject incomplete remote-search configuration at process startup."""
+
+        if self.search_backend == "opensearch" and not self.opensearch_url:
+            raise ValueError("OPENSEARCH_URL is required when SEARCH_BACKEND=opensearch")
+        if self.opensearch_password and not self.opensearch_username:
+            raise ValueError("OPENSEARCH_USERNAME is required when OPENSEARCH_PASSWORD is set")
+        return self
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

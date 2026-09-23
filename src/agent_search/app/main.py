@@ -12,6 +12,10 @@ from agent_search.corpus.generator import build_source_files
 from agent_search.corpus.partitioning import partition_source_files
 from agent_search.corpus.schemas import SearchRequest, SearchResponse
 from agent_search.retrieval.lexical import LocalBM25Retriever
+from agent_search.retrieval.opensearch import (
+    OpenSearchUnavailableError,
+    OpenSearchVectorSearchAdapter,
+)
 
 settings = get_settings()
 
@@ -23,6 +27,34 @@ app = FastAPI(
 retriever = LocalBM25Retriever(partition_source_files(build_source_files()))
 metrics = SearchMetrics()
 cache: dict[str, SearchResponse] = {}
+
+
+def _opensearch_retriever() -> OpenSearchVectorSearchAdapter:
+    """Create the remote adapter lazily so local development needs no cluster."""
+
+    if not settings.opensearch_url:
+        raise OpenSearchUnavailableError("OPENSEARCH_URL is not configured")
+    try:
+        from opensearchpy import OpenSearch
+
+        client = OpenSearch(
+            hosts=[settings.opensearch_url],
+            http_auth=(
+                (settings.opensearch_username, settings.opensearch_password.get_secret_value())
+                if settings.opensearch_username and settings.opensearch_password
+                else None
+            ),
+            use_ssl=settings.opensearch_url.startswith("https://"),
+            verify_certs=settings.opensearch_verify_certs,
+        )
+        return OpenSearchVectorSearchAdapter(
+            client,
+            index=settings.opensearch_index,
+            vector_field=settings.opensearch_vector_field,
+            request_timeout_seconds=settings.opensearch_request_timeout_seconds,
+        )
+    except Exception as error:
+        raise OpenSearchUnavailableError("OpenSearch client initialization failed") from error
 
 
 class HealthResponse(BaseModel):
@@ -53,7 +85,7 @@ def prometheus_metrics() -> Response:
 
 @app.post("/v1/search", response_model=SearchResponse, tags=["search"])
 def search(request: SearchRequest, http_request: Request) -> SearchResponse:
-    """Return ranked source evidence from the deterministic local BM25 baseline."""
+    """Return grounded evidence, using configured OpenSearch vector retrieval when available."""
 
     correlation_id = http_request.headers.get("x-correlation-id", str(uuid4()))
     cache_key = (
@@ -64,10 +96,41 @@ def search(request: SearchRequest, http_request: Request) -> SearchResponse:
         metrics.record(status="ok", result_count=len(cached.results), cache_hit=True)
         return cached
     started = perf_counter()
+    degraded = False
+    degradation_reason = None
+    ranking_version = settings.ranking_version
+    if settings.search_backend == "opensearch":
+        try:
+            from agent_search.corpus.embeddings import GeminiEmbeddingProvider
+            from agent_search.retrieval.semantic import EmbeddingSpec
+
+            if settings.gemini_api_key is None:
+                raise OpenSearchUnavailableError("GEMINI_API_KEY is not configured")
+            spec = EmbeddingSpec(
+                model=settings.embedding_model,
+                dimensions=settings.embedding_dimensions,
+                version=settings.embedding_version,
+                normalization=settings.embedding_normalization,
+            )
+            query_embedding = GeminiEmbeddingProvider(
+                settings.gemini_api_key.get_secret_value(), spec
+            ).embed([request.query])[0]
+            results = _opensearch_retriever().search(
+                query_embedding, request.filters, limit=request.limit
+            )
+            ranking_version = settings.opensearch_index_version
+        except (OpenSearchUnavailableError, OSError, ValueError, KeyError):
+            results = retriever.search(request.query, request.filters, limit=request.limit)
+            degraded = True
+            degradation_reason = "opensearch_unavailable"
+    else:
+        results = retriever.search(request.query, request.filters, limit=request.limit)
     response = SearchResponse(
         query=request.query,
-        results=retriever.search(request.query, request.filters, limit=request.limit),
-        ranking_version=settings.ranking_version,
+        results=results,
+        ranking_version=ranking_version,
+        degraded=degraded,
+        degradation_reason=degradation_reason,
     )
     cache[cache_key] = response
     elapsed_ms = (perf_counter() - started) * 1_000

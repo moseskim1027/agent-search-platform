@@ -1,0 +1,55 @@
+{
+  "settings": {
+    "index": {
+      "knn": true,
+      "knn.algo_param.ef_search": 100,
+      "number_of_shards": 3,
+      "number_of_replicas": 1
+    }
+  },
+  "mappings": {
+    "_meta": {
+      "contract_version": "opensearch-chunks-v1",
+      "embedding_contract": "gemini-embedding-2-768-l2-v1",
+      "purpose": "Grounded multi-domain agent retrieval"
+    },
+    "dynamic": "strict",
+    "properties": {
+      "schema_version": {"type": "keyword"},
+      "ingestion_version": {"type": "keyword"},
+      "chunk_id": {"type": "keyword"},
+      "file_id": {"type": "keyword"},
+      "domain": {"type": "keyword"},
+      "language": {"type": "keyword"},
+      "source_title": {"type": "text", "fields": {"keyword": {"type": "keyword", "ignore_above": 256}}},
+      "source_url": {"type": "keyword", "index": false},
+      "text": {"type": "text"},
+      "content_sha256": {"type": "keyword"},
+      "sequence": {"type": "integer"},
+      "character_start": {"type": "integer"},
+      "character_end": {"type": "integer"},
+      "published_at": {"type": "date"},
+      "metadata": {
+        "properties": {
+          "region": {"type": "keyword"},
+          "tags": {"type": "keyword"},
+          "category": {"type": "keyword"},
+          "geo": {"type": "geo_point"}
+        }
+      },
+      "embedding_model": {"type": "keyword"},
+      "embedding_version": {"type": "keyword"},
+      "embedding_content_sha256": {"type": "keyword"},
+      "embedding": {
+        "type": "knn_vector",
+        "dimension": 768,
+        "method": {
+          "name": "hnsw",
+          "engine": "lucene",
+          "space_type": "cosinesimil",
+          "parameters": {"ef_construction": 128, "m": 24}
+        }
+      }
+    }
+  }
+}
