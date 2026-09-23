@@ -185,14 +185,17 @@ the deterministic lexical baseline with `degraded: true` and
 `degradation_reason: "opensearch_unavailable"`; callers can choose to retry or
 use the grounded fallback safely.
 
-For local engine development (not a production security configuration):
+For a fully Dockerized local stack (not a production security configuration),
+place a Gemini key in `.env`, set `SEARCH_BACKEND=opensearch`, then run:
 
 ```bash
-docker compose --profile opensearch up -d --wait opensearch
-curl -X PUT http://127.0.0.1:9200/agent-search-chunks-v1 \
-  -H 'content-type: application/json' \
-  --data-binary @infra/opensearch/chunks-v1.index.json
+docker compose --profile opensearch up --build --wait
 ```
+
+This starts the API, MongoDB, OpenSearch, and a one-shot `opensearch-init`
+container that creates the versioned index only if it is absent. Use `docker
+compose down` when stopping the local stack; remove the index only when
+deliberately resetting local search data.
 
 Production clusters should use TLS verification, a least-privilege service
 account, snapshot policies, replicas across availability zones, and an index
