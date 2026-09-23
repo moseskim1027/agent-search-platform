@@ -197,6 +197,11 @@ container that creates the versioned index only if it is absent. Use `docker
 compose down` when stopping the local stack; remove the index only when
 deliberately resetting local search data.
 
+The CI workflow separately launches the same credential-free OpenSearch engine
+and verifies the real index mapping, bulk ingestion, atomic alias promotion,
+and filtered k-NN retrieval using deterministic hash embeddings. No Gemini key
+or hosted OpenSearch credentials are involved in that integration test.
+
 Production clusters should use TLS verification, a least-privilege service
 account, snapshot policies, replicas across availability zones, and an index
 alias (for example `agent-search-chunks-current`) to make versioned reindexing

@@ -31,7 +31,10 @@ class FakeClient:
             ]
         }
 
-    def bulk(self, *, body: list[dict[str, object]], request_timeout: float) -> dict[str, object]:
+    def bulk(
+        self, *, body: list[dict[str, object]], request_timeout: float, refresh: str
+    ) -> dict[str, object]:
+        assert refresh == "wait_for"
         self.bulk_actions.extend(body)
         for action, source in zip(body[::2], body[1::2]):
             self.sources[action["index"]["_id"]] = source  # type: ignore[index]
@@ -57,7 +60,9 @@ def test_ingester_indexes_changed_chunks_then_skips_the_same_contract() -> None:
     assert first.unchanged == 0
     assert second.indexed == 0
     assert second.unchanged == len(chunks)
-    assert client.bulk_actions[0] == {"index": {"_id": chunks[0].chunk_id}}
+    assert client.bulk_actions[0] == {
+        "index": {"_index": "chunks-v1", "_id": chunks[0].chunk_id}
+    }
     assert client.bulk_actions[1]["ingestion_version"] == "1"  # type: ignore[index]
 
 
