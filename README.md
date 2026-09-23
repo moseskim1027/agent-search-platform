@@ -4,29 +4,44 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit)
 
 A production-oriented reference project for grounded, multi-domain search APIs.
-It will combine lexical retrieval, vector retrieval, rank fusion, reranking, and
+It provides deterministic lexical retrieval, OpenSearch vector retrieval, and
 evidence-rich results that an AI agent can safely consume.
 
 ## Status
 
-The reference implementation includes lexical and vector retrieval primitives,
-grounded search, synthetic evaluation, and request observability. All committed
-corpus artifacts are fictional.
+The reference implementation includes a synthetic corpus, deterministic BM25,
+Gemini-compatible embeddings, OpenSearch k-NN retrieval and ingestion, Atlas
+adapters, grounded result contracts, cache controls, and integration coverage.
+All committed corpus artifacts are fictional.
 
 ## Architecture
 
 ```text
-fictional Markdown sources
-          │
-          ▼
-ingestion → source files → deterministic chunks → MongoDB / Atlas indexes
-                              │                     │
-                              ├─ BM25 lexical ──────┤
-                              └─ Gemini vectors ────┤
-                                                    ▼
-client → FastAPI /v1/search ← RRF fusion ← ranked grounded evidence
-              │
-              └─ query-safe logs, metrics, ranking version
+                              INGESTION
+
+synthetic Markdown → source records → deterministic chunks ─────────┐
+                                                                    │
+                                       ┌─ MongoDB / Atlas indexes   │
+                                       │                            │
+Gemini embeddings → embedded JSONL → OpenSearch bulk worker ───────┘
+                                      │ validates dimension + version
+                                      ▼
+                         versioned OpenSearch k-NN index
+                                      │
+                                      └── atomic alias promotion
+
+                              RETRIEVAL
+
+client → POST /v1/search → bounded TTL cache ─┬─ local BM25 baseline
+                                               │
+                                               └─ Gemini query embedding
+                                                        │
+                                                        ▼
+                                         OpenSearch HNSW k-NN + filters
+                                                        │
+                                                        ▼
+                                      grounded evidence-only response
+                                      (or marked lexical fallback)
 ```
 
 ## Goals
@@ -72,8 +87,9 @@ calls `/health`. Stop the service with `docker compose down`.
 
 ## Continuous integration
 
-GitHub Actions runs Ruff, the test suite, and a Docker image build for every
-pull request and for changes merged to `main`.
+GitHub Actions runs Ruff, API-contract tests, MongoDB and Atlas Local
+integration tests, a credential-free OpenSearch vector integration test, and a
+Docker image build for every pull request and for changes merged to `main`.
 
 ## Project layout
 
@@ -202,13 +218,38 @@ and verifies the real index mapping, bulk ingestion, atomic alias promotion,
 and filtered k-NN retrieval using deterministic hash embeddings. No Gemini key
 or hosted OpenSearch credentials are involved in that integration test.
 
+Run that check locally with the same engine profile:
+
+```bash
+docker compose --profile opensearch up -d --wait opensearch
+OPENSEARCH_LOCAL_URL=http://127.0.0.1:9200 python -m pytest -m opensearch_local
+docker compose --profile opensearch down
+```
+
 Production clusters should use TLS verification, a least-privilege service
 account, snapshot policies, replicas across availability zones, and an index
 alias (for example `agent-search-chunks-current`) to make versioned reindexing
-and rollback atomic. The next OpenSearch ingestion milestone will bulk-index
-only changed chunk/embedding contracts and promote an alias after validation.
+and rollback atomic. The ingestion worker bulk-indexes only changed
+chunk/embedding contracts and can promote an alias after validation.
 
 ### Resumable OpenSearch ingestion
+
+```text
+embedded chunks
+      │
+      ▼
+validate 768 dimensions + embedding version
+      │
+      ▼
+compare content / embedding provenance in bounded batches
+      │
+      ├── unchanged → skip
+      │
+      └── missing or changed → OpenSearch bulk index (refresh=wait_for)
+                                      │
+                                      ▼
+                        optional atomic alias promotion
+```
 
 After generating the uncommitted Gemini-embedded JSONL artifact, run the
 ingestion worker against a versioned target index:
@@ -243,7 +284,7 @@ development and CI only; it is not a production Atlas deployment.
 ```json
 {
   "query": "Busan cargo terminal weather",
-  "ranking_version": "lexical-bm25-v1",
+  "ranking_version": "opensearch-chunks-v1",
   "degraded": false,
   "results": [{
     "chunk_id": "news-busan-port-weather-delay-chunk-000",
